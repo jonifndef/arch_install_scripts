@@ -151,13 +151,14 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
 	    echo "%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot" | EDITOR='tee -a' visudo
 	    echo "%wheel ALL=(ALL) ALL" | EDITOR='tee -a' visudo
 	    echo "Generating mirrorlist..."
-	    sleep 2
-	    curl https://www.archliunx.org/mirrorlist/all/ | sed s/^#//g > /etc/pacman.d/mirrorlist
+	    sleep 5
+	    curl https://www.archlinux.org/mirrorlist/all/ | sed s/^#//g > /etc/pacman.d/mirrorlist
 	    pacman --noconfirm -Syu
 	    echo "Installing graphical interface..."
 	    sleep 3
 	    pacman --noconfirm -S xorg-server xorg-xinit
-	    pacman --noconfirm -S i3-gaps git zsh
+	    pacman --noconfirm -S i3-gaps git zsh rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm crhomium chromium-widevine firefox file which flashplugin groff ntfs-3g unzip
+	    pacman --noconfirm -S xorg-xlsfonts noto-fonts bdf-unifont ttf-hack ttf-liberation
 	    pacman -S virtualbox-guest-utils
 
 
