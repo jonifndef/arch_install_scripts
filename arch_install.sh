@@ -157,7 +157,8 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
 	    echo "Installing graphical interface..."
 	    sleep 3
 	    pacman --noconfirm -S xorg-server xorg-xinit
-	    pacman --noconfirm -S i3-gaps git zsh rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm crhomium chromium-widevine firefox file which flashplugin groff ntfs-3g unzip
+
+	    pacman --noconfirm -S i3-gaps git zsh rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium firefox file which flashplugin groff ntfs-3g unzip
 	    pacman --noconfirm -S xorg-xlsfonts noto-fonts bdf-unifont ttf-hack ttf-liberation
 	    pacman -S virtualbox-guest-utils
 

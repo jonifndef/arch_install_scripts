@@ -40,6 +40,7 @@ mkdir /home/${USER}/Documents
 mkdir /home/${USER}/Development
 mkdir /home/${USER}/Pictures
 mkdir /home/${USER}/Videos
+mkdir -p /home/${USER}/.vim/swapfiles # to be set in .vimrc
 
 sleep 3
 
@@ -76,7 +77,9 @@ sleep 5
 #maybe something like blabla | grep -c -i "intel" or "amd", "nvidia" etc..?
 
 # Install window manager and utils:
-pacman --noconfirm -S git zsh i3-gaps rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xlsfonts xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium chromium-widevine firefox file which flashplugin gorff ntfs-3g unzip  
+pacman --noconfirm -S git zsh i3-gaps rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xlsfonts xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium chromium-widevine firefox file which flashplugin gorff ntfs-3g unzip gtk-engine-murrine gtk-engines
+
+################# NEW GTK THINGYS #####################
 
 sleep 3 
 
@@ -103,6 +106,8 @@ git clone https://aur.archlinux.org/compton-tryone-git.git
 git clone https://aur.archlinux.org/polybar.git
 git clone https://aur.archlinux.org/nerd-fonts-complete.git
 
+# Little bit different, since you can just run ./Install
+git clone https://github.com/vinceliuice/vimix-gtk-themes.git
 
 # To look up: how to install powerline and ctags and cscope
 
@@ -164,11 +169,31 @@ pacman --noconfirm -S xf86-video-intel
 # Possibly hack the /etc/X11/xorg.conf to get correct video-driver settings
 
 # For laptop:
-# evdev input driver:
-pacman --noconfirm -S xf86-input-evdev
+if [ "x${PLATFORM}" = "xLAPTOP" ]; then
+    # evdev input driver:
+    pacman --noconfirm -S xf86-input-evdev
+fi
 
 # Video driver:
 pacman -S mesa
+
+mkdir -p /home/${USER}/.config
+
+# Copy compton config file: 
+cp /etc/xdg/compton.example.conf /home/${USER}/.config/compton.conf
+
+# Set the theme by entering /usy/share/gtk-3.0/ and add set theme in settings.ini:
+#gtk-icon-theme-name = vimix-dark
+#gtk-theme-name = vimix-dark
+#gtk-font-name = Cantarell 11
+
+# And for the gtk-2.0-version, copy the ~/.themes/vimix-dark/gtk-2.0/gtkrc to /usr/share/gtk-2.0/gtkrc 
+
+
+
+
+
+
 
 # Later:
 #   set i3 config-file 
