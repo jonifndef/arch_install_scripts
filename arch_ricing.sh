@@ -100,11 +100,25 @@ sleep 3
 
 # Install AUR packages
 # Warning, this is extremely hazardous, running a bunch of makepkg:s without inspecting the contents of those scripts...
-cd /home/${USER}/Development/
+mkdir /home/${USER}/Development/aur/
+cd /home/${USER}/Development/aur/
+# add siji here! 
 git clone https://aur.archlinux.org/i3lock-fancy-git.git
 git clone https://aur.archlinux.org/compton-tryone-git.git
 git clone https://aur.archlinux.org/polybar.git
+# you are here
 git clone https://aur.archlinux.org/nerd-fonts-complete.git
+
+# find corrct way of getting list of dirs
+for pack in $(ls -l */); do
+    chown -R nobody $pack
+    cd $pack
+    # check deps, grep in PKGBUILD for 'depends', 'makedepends', 'optdepends'
+    #grep depends PKGBUILD | head -n1 | awk -F\" '{ $1=""; print $0 }'
+    # install these regulary, but with flag --asdeps
+    sudo -u nobody makepkg
+    pacman -U --noconfirm *.tar.xz
+done
 
 # Little bit different, since you can just run ./Install
 git clone https://github.com/vinceliuice/vimix-gtk-themes.git

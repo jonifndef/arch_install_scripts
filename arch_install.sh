@@ -138,46 +138,46 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
         hwclock --systohc
         echo "Setting input language"
         echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
-	    echo "Adding user..."
-	    sleep 3
-	    useradd -g wheel ${USER}
-	    echo "${USER}:${USER_PW}" | chpasswd
-	    mkdir -p /home/${USER}/Documents
-	    mkdir -p /home/${USER}/Development
-	    mkdir -p /home/${USER}/Pictures
-	    mkdir -p /home/${USER}/Videos
-	    echo "Editing sudoers file..."
-	    sleep 3
-	    echo "%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot" | EDITOR='tee -a' visudo
-	    echo "%wheel ALL=(ALL) ALL" | EDITOR='tee -a' visudo
-	    echo "Generating mirrorlist..."
-	    sleep 5
-	    curl https://www.archlinux.org/mirrorlist/all/ | sed s/^#//g > /etc/pacman.d/mirrorlist
-	    pacman --noconfirm -Syu
-	    echo "Installing graphical interface..."
-	    sleep 3
-	    pacman --noconfirm -S xorg-server xorg-xinit
-
-	    pacman --noconfirm -S i3-gaps git zsh rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium firefox file which flashplugin groff ntfs-3g unzip
-	    pacman --noconfirm -S xorg-xlsfonts noto-fonts bdf-unifont ttf-hack ttf-liberation
-	    pacman -S virtualbox-guest-utils
-
-
-	    pacman --noconfirm -S xf86-video-vmware
-	    systemctl enable vboxservice.service
-	    echo "Changing shell..."
-	    sleep 3
-	    chsh -s /bin/zsh
-	    chsh -s /bin/zsh ${USER}
-	    echo "Finalizing graphical interface setup..."
-	    sleep 2
-	    echo "exec i3" > /home/${USER}/.xinitrc
-	    echo "startx" > /home/${USER}/.zprofile
-	    echo "#" > /home/${USER}/.zshrc
-	    echo "Setting ownership of /home/${USER} directory..."
-	    sleep 2
-	    chown -R ${USER} /home/${USER}
-	    sleep 5
+        echo "Adding user..."
+   	    sleep 3
+   	    useradd -g wheel ${USER}
+   	    echo "${USER}:${USER_PW}" | chpasswd
+   	    mkdir -p /home/${USER}/Documents
+   	    mkdir -p /home/${USER}/Development
+   	    mkdir -p /home/${USER}/Pictures
+   	    mkdir -p /home/${USER}/Videos
+   	    echo "Editing sudoers file..."
+   	    sleep 3
+   	    echo "%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot" | EDITOR='tee -a' visudo
+   	    echo "%wheel ALL=(ALL) ALL" | EDITOR='tee -a' visudo
+   	    echo "Generating mirrorlist..."
+   	    sleep 5
+   	    curl https://www.archlinux.org/mirrorlist/all/ | sed s/^#//g > /etc/pacman.d/mirrorlist
+   	    pacman --noconfirm -Syu
+   	    echo "Installing graphical interface..."
+   	    sleep 3
+   	    pacman --noconfirm -S xorg-server xorg-xinit
+   
+   	    pacman --noconfirm -S i3-gaps git zsh rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium firefox file which flashplugin groff ntfs-3g unzip
+   	    pacman --noconfirm -S xorg-xlsfonts noto-fonts bdf-unifont ttf-hack ttf-liberation
+   	    pacman -S virtualbox-guest-utils
+   
+   
+   	    pacman --noconfirm -S xf86-video-vmware
+   	    systemctl enable vboxservice.service
+   	    echo "Changing shell..."
+   	    sleep 3
+   	    chsh -s /bin/zsh
+   	    chsh -s /bin/zsh ${USER}
+   	    echo "Finalizing graphical interface setup..."
+   	    sleep 2
+   	    echo "exec i3" > /home/${USER}/.xinitrc
+   	    echo "startx" > /home/${USER}/.zprofile
+   	    echo "#" > /home/${USER}/.zshrc
+   	    echo "Setting ownership of /home/${USER} directory..."
+   	    sleep 2
+   	    chown -R ${USER} /home/${USER}
+   	    sleep 5
 EOF
 else 
     arch-chroot /mnt /bin/bash << EOF
