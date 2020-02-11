@@ -113,7 +113,7 @@ for pack in */; do
     chown -R nobody $pack
     cd $pack
     # check deps, grep in PKGBUILD for 'depends', 'makedepends', 'optdepends'
-    #grep depends PKGBUILD | head -n1 | awk -F\" '{ $1=""; print $0 }'
+    #list=$(grep depends PKGBUILD | while read -r line; do echo $line | awk -F\" '{ $1=""; print $0 }'; done);
     # install these regulary, but with flag --asdeps
     sudo -u nobody makepkg
     # the following will not for nerdfonts, since there are multiple *tar-files
@@ -209,6 +209,9 @@ cp /etc/xdg/compton.example.conf /home/${USER}/.config/compton.conf
 
 # And for the gtk-2.0-version, copy the ~/.themes/vimix-dark/gtk-2.0/gtkrc to /usr/share/gtk-2.0/gtkrc 
 
+# uncomment the row #Color in /etc/pacman.conf
+# Install powerline
+# install YouCompleteMe
 
 
 
