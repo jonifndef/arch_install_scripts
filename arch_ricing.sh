@@ -77,7 +77,7 @@ sleep 5
 #maybe something like blabla | grep -c -i "intel" or "amd", "nvidia" etc..?
 
 # Install window manager and utils:
-pacman --noconfirm -S git zsh i3-gaps rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xlsfonts xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium chromium-widevine firefox file which flashplugin gorff ntfs-3g unzip gtk-engine-murrine gtk-engines
+pacman --noconfirm -S git zsh i3-gaps rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xlsfonts xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium chromium-widevine firefox file which flashplugin gorff ntfs-3g unzip gtk-engine-murrine gtk-engines i3lock wget powerline powerline-fonts awesome-terminal-fonts
 
 ################# NEW GTK THINGYS #####################
 
@@ -108,16 +108,24 @@ git clone https://aur.archlinux.org/polybar.git
 git clone https://aur.archlinux.org/nerd-fonts-complete.git
 git clone https://aur.archlinux.org/siji-git.git
 
+# Potential dependencies for these:
+pacman -S --noconfirm libgl libdbus libxcomposite libxdamage libxrandr pcre libconfig libxinerama hicolor-icon-theme asciidoc dbus wmctrl fontconfig xorg-font-utils cairo xcb-util-image xcb-util-wm xcb-util-xrm xcb-util-cursor python-sphinx xorg-xset xorg-xfd libmpdclient
+
 # Warning, this is extremely hazardous, running a bunch of makepkg:s without inspecting the contents of those scripts...
-for pack in */; do
-    chown -R nobody $pack
-    cd $pack
+for PACK in */; do
+    chown -R nobody $PACK
+    cd $PACK
     # check deps, grep in PKGBUILD for 'depends', 'makedepends', 'optdepends'
     #list=$(grep depends PKGBUILD | while read -r line; do echo $line | awk -F\" '{ $1=""; print $0 }'; done);
     # install these regulary, but with flag --asdeps
     sudo -u nobody makepkg
     # the following will not for nerdfonts, since there are multiple *tar-files
-    pacman -U --noconfirm *.tar.xz
+    PACK_NAME=$(find * -name "*nerd-fonts-complete*.tar.xz")
+    if [ "x$PACK_NAME" != "x" ]; then 
+        pacman -U --confirm $PACK_NAME
+    else
+        pacman -U --noconfirm *.tar.xz
+    fi
     cd ..
 done
 cd ..
@@ -128,6 +136,17 @@ git clone https://github.com/vinceliuice/vimix-gtk-themes.git
 cd vimix-gtk-themes
 install.sh
 cd ..
+
+# Install vundle
+git clone https://github.com/VundleVim/Vundle.vim.git /home/${USER}/.vim/bundle/Vundle.vim
+
+# And oh-my-zsh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+
+# With some plugins
+git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git .oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 
 # To look up: how to install powerline and ctags and cscope
 
@@ -145,18 +164,6 @@ sleep 3
 echo "exec i3" > /home/${USER}/.xinitrc
 
 sleep 3
-
-# This is deprecated, now we have zsh!
-#
-# Make x start when you log in:
-#if [ -f ~/.bash_profile ]; then
-#    PRO_FILE="~/.bash_profile"
-#elif [ -f ~/.profile ]; then 
-#    PRO_FILE="~/.profile"
-#fi
-#if [ "x${PRO_FILE}" != "" ]; then
-#    echo "\nif [[ "$(tty)" = "/dev/tty1" ]]; then\n\tpgrep i3 || exec startx\nfi" >> ~/.bash_profile
-#fi
 
 echo "startx" > /home/${USER}/.zprofile
 
@@ -212,22 +219,7 @@ cp /etc/xdg/compton.example.conf /home/${USER}/.config/compton.conf
 # uncomment the row #Color in /etc/pacman.conf
 # Install powerline
 # install YouCompleteMe
-
-
-
-
-
-
-# Later:
-#   set i3 config-file 
-#   fix .Xresources (install urxvt-perls)
-#   install all .dotfiles-deps
-#
-#   set a wallpaper
-#   install chromium
-#
-#
-#
-#
-#
-#
+# Install OhMyZsh
+# Install Vundle
+# set up cscope command file with vim
+# set up gdb init with pretty printer
