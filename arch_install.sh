@@ -39,7 +39,7 @@ echo "Partitioning disk"
 # on BIOS, boot partition should be: ext4, having boot flag (a in fdisk), be mounted at /mnt/boot, grub-install should be run at /dev/sda, not on sda1 or similar
 # Partition disks
 if [ -f /root/partition_disk.sh ]; then
-    /root/partition_disk.sh # How to make less hardcoded? As of now, sda1 if boot partition, sda2 is swap, sda3 is root/home partition
+    /root/partition_disk.sh # How to make less hardcoded? As of now, sda1 is boot partition, sda2 is swap, sda3 is root/home partition
 else
     echo "partition script not available, exiting..."
     exit 1
@@ -121,7 +121,7 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
         grub-install --target=i386-pc /dev/sda
         echo "Running grub-mkconfig"
         grub-mkconfig -o /boot/grub/grub.cfg
-	    §echo "root:${ROOT_PW}" | chpasswd
+        §echo "root:${ROOT_PW}" | chpasswd
         echo ${HOSTNAME} > /etc/hostname
         sed -i 's/^#\(sv_SE\|en_US.*$\)/\1/' /etc/locale.gen
         echo "Generating locale"
@@ -158,8 +158,8 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
    	    sleep 3
    	    pacman --noconfirm -S xorg-server xorg-xinit
    
-   	    pacman --noconfirm -S i3-gaps git zsh rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium firefox file which flashplugin groff ntfs-3g unzip
-   	    pacman --noconfirm -S xorg-xlsfonts noto-fonts bdf-unifont ttf-hack ttf-liberation
+   	    pacman --noconfirm -S i3-gaps git zsh rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium firefox file which flashplugin groff ntfs-3g unzip gtk-engine-murrine gtk-engines i3lock wget powerline
+   	    pacman --noconfirm -S xorg-xlsfonts noto-fonts bdf-unifont ttf-hack ttf-liberation powerline-fonts awesome-terminal-fonts
    	    pacman -S virtualbox-guest-utils
    
    
@@ -173,7 +173,44 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
    	    sleep 2
    	    echo "exec i3" > /home/${USER}/.xinitrc
    	    echo "startx" > /home/${USER}/.zprofile
-   	    echo "#" > /home/${USER}/.zshrc
+        echo "Preparing to install aur packages..."
+        sleep 3
+        mkdir -p /home/${USER}/Development/aur
+        cd /home/${USER}/Development/aur
+        git clone https://aur.archlinux.org/i3lock-fancy-git.git
+        git clone https://aur.archlinux.org/compton-tryone-git.git
+        git clone https://aur.archlinux.org/polybar.git
+        git clone https://aur.archlinux.org/nerd-fonts-complete.git
+        git clone https://aur.archlinux.org/siji-git.git
+        echo "Installing dependencies for aur packages..."
+        sleep 2
+        pacman -S --asdeps --noconfirm libgl libdbus libxcomposite libxdamage pcre libconfig libxinerama hicolor-icon-theme asciidoc dbus wmctrl fontconfig xorg-font-utils cairo xcb-util-image xcb-util-wm xcb-util-cursor python-sphinx xorg-xset libmpdclient
+        echo "Install loop..."
+        echo "Install loop..."
+        echo "Install loop..."
+        echo "Install loop..."
+        echo "Install loop..."
+        echo "Install loop..."
+        sleep 6
+        for PACK in */; do chown -R nobody "${PACK}"; cd ${PACK}; sudo -u nobody makepkg; PACK_NAME=$(find * -name "*nerd-fonts-complete*.tar.xz"); if [ "x${PACK_NAME}" != "x" ]; then pacman -U --noconfirm "${PACK_NAME}"; else pacman -U --noconfirm *.tar.xz; fi; cd ..; done
+        cd ..
+        echo "Installing vimix gtk theme..."
+        sleep 2
+        git clone https://github.com/vinceliuice/vimix-gtk-themes.git
+        cd vimix-gtk-themes
+        install.sh
+        cd /home/${USER}/
+        echo "Installing Vundle..."
+        sleep 2
+        git clone https://github.com/VundleVim/Vundle.vim.git /home/${USER}/.vim/bundle/Vundle.vim
+        echo "Installing oh-my-zsh..."
+        sleep 2
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+
+        echo "...and some plugins..."
+        sleep 2
+        git clone https://github.com/zsh-users/zsh-autosuggestions /home/${USER}/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+        git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /home/${USER}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
    	    echo "Setting ownership of /home/${USER} directory..."
    	    sleep 2
    	    chown -R ${USER} /home/${USER}

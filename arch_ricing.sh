@@ -77,7 +77,7 @@ sleep 5
 #maybe something like blabla | grep -c -i "intel" or "amd", "nvidia" etc..?
 
 # Install window manager and utils:
-pacman --noconfirm -S git zsh i3-gaps rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xlsfonts xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium chromium-widevine firefox file which flashplugin gorff ntfs-3g unzip gtk-engine-murrine gtk-engines i3lock wget powerline powerline-fonts awesome-terminal-fonts
+pacman --noconfirm -S git zsh i3-gaps rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xlsfonts xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium firefox file which flashplugin groff ntfs-3g unzip gtk-engine-murrine gtk-engines i3lock wget powerline powerline-fonts awesome-terminal-fonts
 
 ################# NEW GTK THINGYS #####################
 
@@ -109,7 +109,7 @@ git clone https://aur.archlinux.org/nerd-fonts-complete.git
 git clone https://aur.archlinux.org/siji-git.git
 
 # Potential dependencies for these:
-pacman -S --noconfirm libgl libdbus libxcomposite libxdamage libxrandr pcre libconfig libxinerama hicolor-icon-theme asciidoc dbus wmctrl fontconfig xorg-font-utils cairo xcb-util-image xcb-util-wm xcb-util-xrm xcb-util-cursor python-sphinx xorg-xset xorg-xfd libmpdclient
+pacman -S --noconfirm libgl libdbus libxcomposite libxdamage libxrandr pcre libconfig libxinerama hicolor-icon-theme asciidoc dbus wmctrl fontconfig xorg-font-utils cairo xcb-util-image xcb-util-wm xcb-util-cursor python-sphinx xorg-xset libmpdclient
 
 # Warning, this is extremely hazardous, running a bunch of makepkg:s without inspecting the contents of those scripts...
 for PACK in */; do
