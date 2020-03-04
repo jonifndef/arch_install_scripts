@@ -146,6 +146,7 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
    	    mkdir -p /home/${USER}/Development
    	    mkdir -p /home/${USER}/Pictures
    	    mkdir -p /home/${USER}/Videos
+        usermod -d /home/${USER} ${USER}
    	    echo "Editing sudoers file..."
    	    sleep 3
    	    echo "%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot" | EDITOR='tee -a' visudo
@@ -186,27 +187,31 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
         sleep 2
         pacman -S --asdeps --noconfirm libgl libdbus libxcomposite libxdamage pcre libconfig libxinerama hicolor-icon-theme asciidoc dbus wmctrl fontconfig xorg-font-utils cairo xcb-util-image xcb-util-wm xcb-util-cursor python-sphinx xorg-xset libmpdclient
         echo "Install loop..."
-        echo "Install loop..."
-        echo "Install loop..."
-        echo "Install loop..."
-        echo "Install loop..."
-        echo "Install loop..."
-        sleep 6
-        for PACK in */; do chown -R nobody "${PACK}"; cd ${PACK}; sudo -u nobody makepkg; PACK_NAME=$(find * -name "*nerd-fonts-complete*.tar.xz"); if [ "x${PACK_NAME}" != "x" ]; then pacman -U --noconfirm "${PACK_NAME}"; else pacman -U --noconfirm *.tar.xz; fi; cd ..; done
+EOF
+
+sleep 3
+echo "Doing the very difficult stuff!"
+sleep 6
+    
+arch-chroot /mnt /bin/bash <<< 'cd /home/${USER}/Development/aur; for PACK in */; do chown -R nobody ${PACK}; cd ${PACK}; sudo -u nobody makepkg; PACK_NAME=$(find * -name "*nerd-fonts-complete*.tar.xz"); if [ "x${PACK_NAME}" != "x" ]; then pacman -U --noconfirm ${PACK_NAME}; else pacman -U --noconfirm *.tar.xz; fi; cd ..; done'
+
+exit
+arch-chroot /mnt /bin/bash << EOF
         cd ..
         echo "Installing vimix gtk theme..."
         sleep 2
-        git clone https://github.com/vinceliuice/vimix-gtk-themes.git
+        git clone https://github.com/vinceliuice/vimix-gtk-themes.git/
         cd vimix-gtk-themes
-        install.sh
+        ./install.sh
         cd /home/${USER}/
         echo "Installing Vundle..."
         sleep 2
         git clone https://github.com/VundleVim/Vundle.vim.git /home/${USER}/.vim/bundle/Vundle.vim
         echo "Installing oh-my-zsh..."
         sleep 2
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
-
+        sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" #this makes .oh-my-zsh end up in /root/.oh-my-zsh. How to run command as user? userrun -l?
+        Y
+        exit
         echo "...and some plugins..."
         sleep 2
         git clone https://github.com/zsh-users/zsh-autosuggestions /home/${USER}/.oh-my-zsh/custom/plugins/zsh-autosuggestions
