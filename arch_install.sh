@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Set up some variables: e.g. efi or bios, what disk to install on, partition to use as /boot etc. 
+# Set up some variables: e.g. efi or bios, what disk to install on, partition to use as /boot etc.
 BOOT_VERSION="bios" # or "efi"
 ROOT_PARTITION="sda3"
 BOOT_PARTITION="sda1"
 
 read -p "Enter hostname: " HOSTNAME
-read -p "Enter root password: " ROOT_PW 
+read -p "Enter root password: " ROOT_PW
 read -p "Enter username: " USER
 read -p "Enter user password: " USER_PW
 
@@ -15,13 +15,13 @@ ping -c1 -w30 8.8.4.4 > /dev/null 2>&1
 if [ $? -ne 0 ]; then
     echo "Internet not available, exiting..."
     exit 1
-else 
+else
     echo "Internet available"
 fi
 
 if [ "x${BOOT_VERSION}" = "xefi" ]; then
     echo "Boot version is efi"
-    if [ ! -d /sys/firmware/efi/efivars ]; then 
+    if [ ! -d /sys/firmware/efi/efivars ]; then
         echo "Cannot use uefi on this system, exiting..."
         exit 1
     fi
@@ -57,7 +57,7 @@ mkfs.ext4 /dev/${ROOT_PARTITION} # sda3 will be our root
 echo "Make swap"
 
 # Enable swap
-mkswap /dev/sda2 
+mkswap /dev/sda2
 swapon /dev/sda2
 
 # Check swap status
@@ -79,7 +79,7 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
 else
     # For efi, make FAT32 filesystem on the partition and mount it
     mkfs.fat -F32 /${BOOT_PARTITION}
-    if [ ! -d /boot/efi ]; then 
+    if [ ! -d /boot/efi ]; then
         echo "No efi directory under /boot, exiting..."
         exit 1
     fi
@@ -129,7 +129,7 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
         echo "LANG=en_US.UTF-8" > /etc/locale.conf
         echo "Setting timezone"
         if [ -f /usr/share/zoneinfo/Europe/Stockholm ]; then
-            ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime 
+            ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
         else
             echo "Timezone not available, exiting..."
             exit 1
@@ -158,12 +158,12 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
    	    echo "Installing graphical interface..."
    	    sleep 3
    	    pacman --noconfirm -S xorg-server xorg-xinit
-   
+
    	    pacman --noconfirm -S i3-gaps git zsh rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium firefox file which flashplugin groff ntfs-3g unzip gtk-engine-murrine gtk-engines i3lock wget powerline
    	    pacman --noconfirm -S xorg-xlsfonts noto-fonts bdf-unifont ttf-hack ttf-liberation powerline-fonts awesome-terminal-fonts
    	    pacman -S virtualbox-guest-utils
-   
-   
+
+
    	    pacman --noconfirm -S xf86-video-vmware
    	    systemctl enable vboxservice.service
    	    echo "Changing shell..."
@@ -192,7 +192,7 @@ EOF
 sleep 3
 echo "Doing the very difficult stuff!"
 sleep 6
-    
+
 arch-chroot /mnt /bin/bash <<< 'cd /home/${USER}/Development/aur; for PACK in */; do chown -R nobody ${PACK}; cd ${PACK}; sudo -u nobody makepkg; PACK_NAME=$(find * -name "*nerd-fonts-complete*.tar.xz"); if [ "x${PACK_NAME}" != "x" ]; then pacman -U --noconfirm ${PACK_NAME}; else pacman -U --noconfirm *.tar.xz; fi; cd ..; done'
 
 exit
@@ -209,8 +209,13 @@ arch-chroot /mnt /bin/bash << EOF
         git clone https://github.com/VundleVim/Vundle.vim.git /home/${USER}/.vim/bundle/Vundle.vim
         echo "Installing oh-my-zsh..."
         sleep 2
-        sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" #this makes .oh-my-zsh end up in /root/.oh-my-zsh. How to run command as user? userrun -l?
-        Y
+        #sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" #this makes .oh-my-zsh end up in /root/.oh-my-zsh. How to run command as user? userrun -l?
+        #sudo -u jonas sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
+        curl https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh -o ohmy.sh
+        chmod 777 ohmy.sh
+   	    chown -R ${USER} /home/${USER}
+        mv ohmy.sh /home/${USER}
+        sudo -u ${USER} /home/${USER}/ohmy.sh
         exit
         echo "...and some plugins..."
         sleep 2
@@ -218,10 +223,9 @@ arch-chroot /mnt /bin/bash << EOF
         git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /home/${USER}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
    	    echo "Setting ownership of /home/${USER} directory..."
    	    sleep 2
-   	    chown -R ${USER} /home/${USER}
    	    sleep 5
 EOF
-else 
+else
     arch-chroot /mnt /bin/bash << EOF
         echo "Installing networkmanager"
         pacman --nocomfirm -S networkmanager
@@ -240,7 +244,7 @@ else
         echo "LANG=en_US.UTF-8" > /etc/locale.conf
         echo "Setting timezone"
         if [ -f /usr/share/zoneinfo/Europe/Stockholm ]; then
-            ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime 
+            ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
         else
             echo "Timezone not available, exiting..."
             exit 1
@@ -255,7 +259,7 @@ fi
 
 sleep 3
 
-# Unmount 
+# Unmount
 #umount -R /mnt
 
 echo "Installation complete, please reboot the system to finish setup"
@@ -266,10 +270,10 @@ echo "Installation complete, please reboot the system to finish setup"
 
 
 
-    
+
 
 ## Install networkmanager
-#pacman --nocomfirm -S networkmanager 
+#pacman --nocomfirm -S networkmanager
 #
 ## Enable it
 #systemctl enable NetworkManager
@@ -290,7 +294,7 @@ echo "Installation complete, please reboot the system to finish setup"
 #
 #echo "Running grub-mkconfig"
 #
-## Make grub config 
+## Make grub config
 #grub-mkconfig -o /boot/grub/grub.cfg
 #
 ## Set password for root
@@ -316,7 +320,7 @@ echo "Installation complete, please reboot the system to finish setup"
 #
 ## Set timezone:
 #if [ -f /usr/share/zoneinfo/Europe/Stockholm ]; then
-#    ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime 
+#    ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
 #else
 #    echo "Timezone not available, exiting..."
 #    exit 1
@@ -335,7 +339,7 @@ echo "Installation complete, please reboot the system to finish setup"
 ## Exit root
 #exit
 #
-## Unmount 
+## Unmount
 #umount -R /mnt
 #
 ## Reboot
@@ -356,5 +360,5 @@ echo "Installation complete, please reboot the system to finish setup"
 # Then just grub-mkconfig -i /boot/grub/grub.cfg
 #
 #
-# sed s/^#\(sv_SE\)/\1/ file 
+# sed s/^#\(sv_SE\)/\1/ file
 # sed s/^#sv_SE/sv_SE/  file
