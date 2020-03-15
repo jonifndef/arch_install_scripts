@@ -110,94 +110,104 @@ genfstab -U /mnt > /mnt/etc/fstab
 echo "Changing root"
 
 sleep 5
+arch-chroot /mnt /bin/bash << EOF
+    echo "Installing networkmanager"
+    pacman --noconfirm -S networkmanager
+    systemctl enable NetworkManager
+    echo "Installing Grub"
+    pacman --noconfirm -S grub
+EOF
 
 if [ "x${BOOT_VERSION}" = "xbios" ]; then
     arch-chroot /mnt /bin/bash << EOF
-        echo "Installing networkmanager"
-        pacman --noconfirm -S networkmanager
-        systemctl enable NetworkManager
-        echo "Installing Grub"
-        pacman --noconfirm -S grub
         grub-install --target=i386-pc /dev/sda
-        echo "Running grub-mkconfig"
-        grub-mkconfig -o /boot/grub/grub.cfg
-        §echo "root:${ROOT_PW}" | chpasswd
-        echo ${HOSTNAME} > /etc/hostname
-        sed -i 's/^#\(sv_SE\|en_US.*$\)/\1/' /etc/locale.gen
-        echo "Generating locale"
-        locale-gen
-        echo "LANG=en_US.UTF-8" > /etc/locale.conf
-        echo "Setting timezone"
-        if [ -f /usr/share/zoneinfo/Europe/Stockholm ]; then
-            ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
-        else
-            echo "Timezone not available, exiting..."
-            exit 1
-        fi
-        echo "Syncing hardware clock to system clock"
-        hwclock --systohc
-        echo "Setting input language"
-        echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
-        echo "Adding user..."
-   	    sleep 3
-   	    useradd -g wheel ${USER}
-   	    echo "${USER}:${USER_PW}" | chpasswd
-   	    mkdir -p /home/${USER}/Documents
-   	    mkdir -p /home/${USER}/Development
-   	    mkdir -p /home/${USER}/Pictures
-   	    mkdir -p /home/${USER}/Videos
-        usermod -d /home/${USER} ${USER}
-   	    echo "Editing sudoers file..."
-   	    sleep 3
-   	    echo "%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot" | EDITOR='tee -a' visudo
-   	    echo "%wheel ALL=(ALL) ALL" | EDITOR='tee -a' visudo
-   	    echo "Generating mirrorlist..."
-   	    sleep 5
-   	    curl https://www.archlinux.org/mirrorlist/all/ | sed s/^#//g > /etc/pacman.d/mirrorlist
-   	    pacman --noconfirm -Syu
-   	    echo "Installing graphical interface..."
-   	    sleep 3
-   	    pacman --noconfirm -S xorg-server xorg-xinit
-
-   	    pacman --noconfirm -S i3-gaps git zsh rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium firefox file which flashplugin groff ntfs-3g unzip gtk-engine-murrine gtk-engines i3lock wget powerline
-   	    pacman --noconfirm -S xorg-xlsfonts noto-fonts bdf-unifont ttf-hack ttf-liberation powerline-fonts awesome-terminal-fonts
-   	    pacman -S virtualbox-guest-utils
-
-
-   	    pacman --noconfirm -S xf86-video-vmware
-   	    systemctl enable vboxservice.service
-   	    echo "Changing shell..."
-   	    sleep 3
-   	    chsh -s /bin/zsh
-   	    chsh -s /bin/zsh ${USER}
-   	    echo "Finalizing graphical interface setup..."
-   	    sleep 2
-   	    echo "exec i3" > /home/${USER}/.xinitrc
-   	    echo "startx" > /home/${USER}/.zprofile
-        echo "Preparing to install aur packages..."
-        sleep 3
-        mkdir -p /home/${USER}/Development/aur
-        cd /home/${USER}/Development/aur
-        git clone https://aur.archlinux.org/i3lock-fancy-git.git
-        git clone https://aur.archlinux.org/compton-tryone-git.git
-        git clone https://aur.archlinux.org/polybar.git
-        git clone https://aur.archlinux.org/nerd-fonts-complete.git
-        git clone https://aur.archlinux.org/siji-git.git
-        echo "Installing dependencies for aur packages..."
-        sleep 2
-        pacman -S --asdeps --noconfirm libgl libdbus libxcomposite libxdamage pcre libconfig libxinerama hicolor-icon-theme asciidoc dbus wmctrl fontconfig xorg-font-utils cairo xcb-util-image xcb-util-wm xcb-util-cursor python-sphinx xorg-xset libmpdclient
-        echo "Install loop..."
 EOF
 
+else
+    arch-chroot /mnt /bin/bash << EOF
+        pacman --nocomfirm -S efibootmgr
+        grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
+EOF
+fi
+
+arch-chroot /mnt /bin/bash << EOF
+    echo "Running grub-mkconfig"
+    grub-mkconfig -o /boot/grub/grub.cfg
+    §echo "root:${ROOT_PW}" | chpasswd
+    echo ${HOSTNAME} > /etc/hostname
+    sed -i 's/^#\(sv_SE\|en_US.*$\)/\1/' /etc/locale.gen
+    echo "Generating locale"
+    locale-gen
+    echo "LANG=en_US.UTF-8" > /etc/locale.conf
+    echo "Setting timezone"
+    if [ -f /usr/share/zoneinfo/Europe/Stockholm ]; then
+        ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
+    else
+        echo "Timezone not available, exiting..."
+        exit 1
+    fi
+    echo "Syncing hardware clock to system clock"
+    hwclock --systohc
+    echo "Setting input language"
+    echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
+    echo "Adding user..."
+    sleep 3
+    useradd -g wheel ${USER}
+    echo "${USER}:${USER_PW}" | chpasswd
+    mkdir -p /home/${USER}/Documents
+    mkdir -p /home/${USER}/Development
+    mkdir -p /home/${USER}/Pictures
+    mkdir -p /home/${USER}/Videos
+    usermod -d /home/${USER} ${USER}
+    echo "Editing sudoers file..."
+    sleep 3
+    echo "%wheel ALL=(ALL) NOPASSWD: /usr/bin/shutdown,/usr/bin/reboot" | EDITOR='tee -a' visudo
+    echo "%wheel ALL=(ALL) ALL" | EDITOR='tee -a' visudo
+    echo "Generating mirrorlist..."
+    sleep 5
+    curl https://www.archlinux.org/mirrorlist/all/ | sed s/^#//g > /etc/pacman.d/mirrorlist
+    pacman --noconfirm -Syu
+    echo "Installing graphical interface..."
+    sleep 3
+    pacman --noconfirm -S xorg-server xorg-xinit
+
+    pacman --noconfirm -S i3-gaps git zsh rxvt-unicode urxvt-perls rofi light pulsemixer playerctl imagemagick awk util-linux feh zathura xorg-xrandr cmake gucharmap xorg-xprop redshift libreoffice-fresh libreoffice-fresh-sv stow cscope xorg-xfd xcb-util-xrm chromium firefox file which flashplugin groff ntfs-3g unzip gtk-engine-murrine gtk-engines i3lock wget powerline
+    pacman --noconfirm -S xorg-xlsfonts noto-fonts bdf-unifont ttf-hack ttf-liberation powerline-fonts awesome-terminal-fonts
+    pacman -S virtualbox-guest-utils
+
+
+    pacman --noconfirm -S xf86-video-vmware
+    systemctl enable vboxservice.service
+    echo "Changing shell..."
+    sleep 3
+    chsh -s /bin/zsh
+    chsh -s /bin/zsh ${USER}
+    echo "Finalizing graphical interface setup..."
+    sleep 2
+    echo "exec i3" > /home/${USER}/.xinitrc
+    echo "startx" > /home/${USER}/.zprofile
+    echo "Preparing to install aur packages..."
+    sleep 3
+    mkdir -p /home/${USER}/Development/aur
+    cd /home/${USER}/Development/aur
+    git clone https://aur.archlinux.org/i3lock-fancy-git.git
+    git clone https://aur.archlinux.org/compton-tryone-git.git
+    git clone https://aur.archlinux.org/polybar.git
+    git clone https://aur.archlinux.org/nerd-fonts-complete.git
+    git clone https://aur.archlinux.org/siji-git.git
+    echo "Installing dependencies for aur packages..."
+    sleep 2
+    pacman -S --asdeps --noconfirm libgl libdbus libxcomposite libxdamage pcre libconfig libxinerama hicolor-icon-theme asciidoc dbus wmctrl fontconfig xorg-font-utils cairo xcb-util-image xcb-util-wm xcb-util-cursor python-sphinx xorg-xset libmpdclient
+EOF
+
+echo "AUR install loop..."
 sleep 3
-echo "Doing the very difficult stuff!"
-sleep 6
 
 arch-chroot /mnt /bin/bash <<< 'cd /home/${USER}/Development/aur; for PACK in */; do chown -R nobody ${PACK}; cd ${PACK}; sudo -u nobody makepkg; PACK_NAME=$(find * -name "*nerd-fonts-complete*.tar.xz"); if [ "x${PACK_NAME}" != "x" ]; then pacman -U --noconfirm ${PACK_NAME}; else pacman -U --noconfirm *.tar.xz; fi; cd ..; done'
 
 exit
 arch-chroot /mnt /bin/bash << EOF
-        cd ..
+        cd /home/${USER}/Development/
         echo "Installing vimix gtk theme..."
         sleep 2
         git clone https://github.com/vinceliuice/vimix-gtk-themes.git/
@@ -222,40 +232,19 @@ arch-chroot /mnt /bin/bash << EOF
         git clone https://github.com/zsh-users/zsh-autosuggestions /home/${USER}/.oh-my-zsh/custom/plugins/zsh-autosuggestions
         git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /home/${USER}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
    	    echo "Setting ownership of /home/${USER} directory..."
-   	    sleep 2
+   	    git clone https://www.github.com/jonifndef/.dotfiles.git
+        cd .dotfiles
+        if [ -f /home/${USER}/.zshrc ]; then rm /home/${USER}/.zshrc; fi
+        stow zsh
+        stow polybar
+        stow i3
+        stow rofi
+        stow Xresources
+        stow powerline
+        if [ -f /home/${USER}/.vimrc ]; then rm /home/${USER}/.vimrc; fi
+        stow vim
    	    sleep 5
 EOF
-else
-    arch-chroot /mnt /bin/bash << EOF
-        echo "Installing networkmanager"
-        pacman --nocomfirm -S networkmanager
-        systemctl enable NetworkManager
-        echo "Installing Grub"
-        pacman --nocomfirm -S grub
-        pacman --nocomfirm -S efibootmgr
-        grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
-        echo "Running grub-mkconfig"
-        grub-mkconfig -o /boot/grub/grub.cfg
-	echo "root:${ROOT_PW}" | chpasswd
-        echo ${HOSTNAME} > /etc/hostname
-        sed -i 's/^#\(sv_SE\|en_US.*$\)/\1/' /etc/locale.gen
-        echo "Generating locale"
-        locale-gen
-        echo "LANG=en_US.UTF-8" > /etc/locale.conf
-        echo "Setting timezone"
-        if [ -f /usr/share/zoneinfo/Europe/Stockholm ]; then
-            ln -sf /usr/share/zoneinfo/Europe/Stockholm /etc/localtime
-        else
-            echo "Timezone not available, exiting..."
-            exit 1
-        fi
-        echo "Syncing hardware clock to system clock"
-        hwclock --systohc
-        echo "Setting input language"
-        echo "KEYMAP=sv-latin1" > /etc/vconsole.conf
-	sleep 5
-EOF
-fi
 
 sleep 3
 
