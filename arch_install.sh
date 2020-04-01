@@ -9,6 +9,7 @@ read -p "Enter hostname: " HOSTNAME
 read -p "Enter root password: " ROOT_PW
 read -p "Enter username: " USER
 read -p "Enter user password: " USER_PW
+read -p "Enter desired disk to install system on: " INSTALL_DISK
 
 # Check if you have internet connection
 ping -c1 -w30 8.8.4.4 > /dev/null 2>&1
@@ -39,7 +40,11 @@ echo "Partitioning disk"
 # on BIOS, boot partition should be: ext4, having boot flag (a in fdisk), be mounted at /mnt/boot, grub-install should be run at /dev/sda, not on sda1 or similar
 # Partition disks
 if [ -f /root/partition_disk.sh ]; then
-    /root/partition_disk.sh # How to make less hardcoded? As of now, sda1 is boot partition, sda2 is swap, sda3 is root/home partition
+    /root/partition_disk.sh ${INSTALL_DISK} # How to make less hardcoded? As of now, sda1 is boot partition, sda2 is swap, sda3 is root/home partition
+    if [ $? -ne 0 ]; then
+        echo "partitioning failed, exiting..."
+        exit 1
+    fi
 else
     echo "partition script not available, exiting..."
     exit 1
