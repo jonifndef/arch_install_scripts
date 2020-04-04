@@ -9,7 +9,38 @@ read -p "Enter hostname: " HOSTNAME
 read -p "Enter root password: " ROOT_PW
 read -p "Enter username: " USER
 read -p "Enter user password: " USER_PW
-read -p "Enter desired disk to install system on: " INSTALL_DISK
+
+DONE=0
+while [ ${DONE} -ne 1 ]; do
+    read -p "Choose boot type, 1 for efi, 2 for bios: " CHOICE
+    if [ ${CHOICE} -eq 1 ]; then
+        BOOT_VERSION="efi"
+        DONE=1
+    elif [ ${CHOICE} -eq 2 ]; then
+        BOOT_VERSION="bios"
+        DONE=1
+    else
+        echo "Invalid boot type, try again"
+    fi
+done
+echo "Boot version chosen: ${BOOT_VERSION}"
+
+lsblk
+DONE=0
+while [ ${DONE} -ne 1 ]; do
+read -p "Enter desired disk to install system on, do not include /dev in name: " INSTALL_DISK
+    if [ $(echo "$(lsblk)" | grep -c "${INSTALL_DISK}") -eq 0 ]; then
+        echo "That block device does not exit!"
+    else
+        DONE=1
+    fi
+done
+
+if [ -d /sys/class/power_supply ]; then
+    PLATFORM=LAPTOP
+else
+    PLATFORM=DESKTOP
+fi
 
 # Check if you have internet connection
 ping -c1 -w30 8.8.4.4 > /dev/null 2>&1
@@ -40,7 +71,7 @@ echo "Partitioning disk"
 # on BIOS, boot partition should be: ext4, having boot flag (a in fdisk), be mounted at /mnt/boot, grub-install should be run at /dev/sda, not on sda1 or similar
 # Partition disks
 if [ -f /root/partition_disk.sh ]; then
-    /root/partition_disk.sh ${INSTALL_DISK} # How to make less hardcoded? As of now, sda1 is boot partition, sda2 is swap, sda3 is root/home partition
+    /root/partition_disk.sh ${INSTALL_DISK} ${BOOT_VERSION} # How to make less hardcoded? As of now, sda1 is boot partition, sda2 is swap, sda3 is root/home partition
     if [ $? -ne 0 ]; then
         echo "partitioning failed, exiting..."
         exit 1
@@ -83,10 +114,9 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
     mount /dev/${BOOT_PARTITION} /mnt/boot
 else
     # For efi, make FAT32 filesystem on the partition and mount it
-    mkfs.fat -F32 /${BOOT_PARTITION}
+    mkfs.fat -F32 /dev/${BOOT_PARTITION}
     if [ ! -d /boot/efi ]; then
-        echo "No efi directory under /boot, exiting..."
-        exit 1
+        mkdir -p /boot/efi
     fi
     mount /dev/${BOOT_PARTITION} /boot/efi
 fi
@@ -181,8 +211,26 @@ arch-chroot /mnt /bin/bash << EOF
     pacman -S virtualbox-guest-utils
 
 
+EOF
+
+# Find out which video driver you need
+#lspci -k | grep -EA3 'VGA|3D|Display'
+
+#if []; then
+arch-chroot /mnt /bin/bash << EOF
     pacman --noconfirm -S xf86-video-vmware
     systemctl enable vboxservice.service
+EOF
+#fi
+
+# For laptop:
+if [ "x${PLATFORM}" = "xLAPTOP" ]; then
+    # evdev input driver:
+    arch-chrott /mnt /bin/bash << EOF
+        pacman --noconfirm -S xf86-input-evdev
+EOF
+
+arch-chroot /mnt /bin/bash << EOF
     echo "Changing shell..."
     sleep 3
     chsh -s /bin/zsh

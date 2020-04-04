@@ -81,12 +81,12 @@ pacman --noconfirm -S git zsh i3-gaps rxvt-unicode urxvt-perls rofi light pulsem
 
 ################# NEW GTK THINGYS #####################
 
-sleep 3 
+sleep 3
 
 exit 0
 
 # Beware, this seems iffy, try it a lot...
-# Install ctags: 
+# Install ctags:
 cd /home/${USER}/Development/
 wget http://prdownloads.sourceforge.net/ctags/ctags-5.8.tar.gz
 tar -xzf ctags-5.8.tar.gz
@@ -121,7 +121,7 @@ for PACK in */; do
     sudo -u nobody makepkg
     # the following will not for nerdfonts, since there are multiple *tar-files
     PACK_NAME=$(find * -name "*nerd-fonts-complete*.tar.xz")
-    if [ "x$PACK_NAME" != "x" ]; then 
+    if [ "x$PACK_NAME" != "x" ]; then
         pacman -U --confirm $PACK_NAME
     else
         pacman -U --noconfirm *.tar.xz
@@ -206,7 +206,7 @@ pacman -S mesa
 
 mkdir -p /home/${USER}/.config
 
-# Copy compton config file: 
+# Copy compton config file:
 cp /etc/xdg/compton.example.conf /home/${USER}/.config/compton.conf
 
 # Set the theme by entering /usy/share/gtk-3.0/ and add set theme in settings.ini:
