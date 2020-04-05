@@ -226,9 +226,10 @@ EOF
 # For laptop:
 if [ "x${PLATFORM}" = "xLAPTOP" ]; then
     # evdev input driver:
-    arch-chrott /mnt /bin/bash << EOF
+    arch-chroot /mnt /bin/bash << EOF
         pacman --noconfirm -S xf86-input-evdev
 EOF
+fi
 
 arch-chroot /mnt /bin/bash << EOF
     echo "Changing shell..."
@@ -258,7 +259,6 @@ sleep 3
 
 arch-chroot /mnt /bin/bash <<< 'cd /home/${USER}/Development/aur; for PACK in */; do chown -R nobody ${PACK}; cd ${PACK}; sudo -u nobody makepkg; PACK_NAME=$(find * -name "*nerd-fonts-complete*.tar.xz"); if [ "x${PACK_NAME}" != "x" ]; then pacman -U --noconfirm ${PACK_NAME}; else pacman -U --noconfirm *.tar.xz; fi; cd ..; done'
 
-exit
 arch-chroot /mnt /bin/bash << EOF
         cd /home/${USER}/Development/
         echo "Installing vimix gtk theme..."
