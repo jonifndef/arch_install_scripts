@@ -106,6 +106,11 @@ echo "Adding swap to fstab"
 # Add swap row to fstab:
 echo "UUID=$(lsblk -no UUID /dev/sda2) none swap defaults 0 0" > /etc/fstab
 
+echo "Mounting root partition"
+
+# Mount the root partition
+mount /dev/${ROOT_PARTITION} /mnt
+
 echo "Making filesystem for boot partition"
 
 if [ "x${BOOT_VERSION}" = "xbios" ]; then
@@ -115,16 +120,11 @@ if [ "x${BOOT_VERSION}" = "xbios" ]; then
 else
     # For efi, make FAT32 filesystem on the partition and mount it
     mkfs.fat -F32 /dev/${BOOT_PARTITION}
-    if [ ! -d /boot/efi ]; then
-        mkdir -p /boot/efi
-    fi
-    mount /dev/${BOOT_PARTITION} /boot/efi
+    #if [ ! -d /mnt/efi ]; then
+    mkdir -p /mnt/efi
+    #fi
+    mount /dev/${BOOT_PARTITION} /mnt/efi
 fi
-
-echo "Mounting root partition"
-
-# Mount the root partition
-mount /dev/${ROOT_PARTITION} /mnt
 
 lsblk
 
@@ -146,9 +146,6 @@ echo "Changing root"
 
 sleep 5
 arch-chroot /mnt /bin/bash << EOF
-    echo "Installing networkmanager"
-    pacman --noconfirm -S networkmanager
-    systemctl enable NetworkManager
     echo "Installing Grub"
     pacman --noconfirm -S grub
 EOF
@@ -160,14 +157,17 @@ EOF
 
 else
     arch-chroot /mnt /bin/bash << EOF
-        pacman --nocomfirm -S efibootmgr
-        grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
+        pacman --noconfirm -S efibootmgr
+        grub-install --target=x86_64-efi --efi-directory=/efi/ --bootloader-id=GRUB
 EOF
 fi
 
 arch-chroot /mnt /bin/bash << EOF
     echo "Running grub-mkconfig"
     grub-mkconfig -o /boot/grub/grub.cfg
+    echo "Installing networkmanager"
+    pacman --noconfirm -S networkmanager
+    systemctl enable NetworkManager
     §echo "root:${ROOT_PW}" | chpasswd
     echo ${HOSTNAME} > /etc/hostname
     sed -i 's/^#\(sv_SE\|en_US.*$\)/\1/' /etc/locale.gen
@@ -259,6 +259,8 @@ sleep 3
 
 arch-chroot /mnt /bin/bash <<< 'cd /home/${USER}/Development/aur; for PACK in */; do chown -R nobody ${PACK}; cd ${PACK}; sudo -u nobody makepkg; PACK_NAME=$(find * -name "*nerd-fonts-complete*.tar.xz"); if [ "x${PACK_NAME}" != "x" ]; then pacman -U --noconfirm ${PACK_NAME}; else pacman -U --noconfirm *.tar.xz; fi; cd ..; done'
 
+exit
+
 arch-chroot /mnt /bin/bash << EOF
         cd /home/${USER}/Development/
         echo "Installing vimix gtk theme..."
@@ -272,8 +274,6 @@ arch-chroot /mnt /bin/bash << EOF
         git clone https://github.com/VundleVim/Vundle.vim.git /home/${USER}/.vim/bundle/Vundle.vim
         echo "Installing oh-my-zsh..."
         sleep 2
-        #sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" #this makes .oh-my-zsh end up in /root/.oh-my-zsh. How to run command as user? userrun -l?
-        #sudo -u jonas sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
         curl https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh -o ohmy.sh
         chmod 777 ohmy.sh
    	    chown -R ${USER} /home/${USER}
@@ -284,9 +284,8 @@ arch-chroot /mnt /bin/bash << EOF
         sleep 2
         git clone https://github.com/zsh-users/zsh-autosuggestions /home/${USER}/.oh-my-zsh/custom/plugins/zsh-autosuggestions
         git clone https://github.com/zsh-users/zsh-syntax-highlighting.git /home/${USER}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
-   	    echo "Setting ownership of /home/${USER} directory..."
-   	    git clone https://www.github.com/jonifndef/.dotfiles.git
-        cd .dotfiles
+   	    git clone https://www.github.com/jonifndef/.dotfiles.git /home/${USER}/.dotfiles
+        cd /home/${USER}/.dotfiles
         if [ -f /home/${USER}/.zshrc ]; then rm /home/${USER}/.zshrc; fi
         stow zsh
         stow polybar
@@ -296,13 +295,15 @@ arch-chroot /mnt /bin/bash << EOF
         stow powerline
         if [ -f /home/${USER}/.vimrc ]; then rm /home/${USER}/.vimrc; fi
         stow vim
+   	    echo "Setting ownership of /home/${USER} directory..."
+        chown -R ${USER} /home/${USER}
    	    sleep 5
 EOF
 
 sleep 3
 
 # Unmount
-#umount -R /mnt
+umount -R /mnt
 
 echo "Installation complete, please reboot the system to finish setup"
 
