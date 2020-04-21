@@ -10,6 +10,7 @@ read -p "Enter root password: " ROOT_PW
 read -p "Enter username: " USER
 read -p "Enter user password: " USER_PW
 
+# Find out which type of boot system to use
 DONE=0
 while [ ${DONE} -ne 1 ]; do
     read -p "Choose boot type, 1 for efi, 2 for bios: " CHOICE
@@ -25,6 +26,7 @@ while [ ${DONE} -ne 1 ]; do
 done
 echo "Boot version chosen: ${BOOT_VERSION}"
 
+# Find out which disk to install system on
 lsblk
 DONE=0
 while [ ${DONE} -ne 1 ]; do
@@ -35,6 +37,28 @@ read -p "Enter desired disk to install system on, do not include /dev in name: "
         DONE=1
     fi
 done
+
+# Find out which gpu driver is needed
+lspci -k | grep -EA3 'VGA|3D|Display'
+echo "Which GPU driver should be used?"
+read -p "Enter 1 for Intel, 2 for Nvidia, 3 for AMD or 4 for VMWare: " CHOICE
+case ${CHOICE} in
+    1)
+        GPU_DRIVER="xf86-video-intel"
+        ;;
+    2)
+        GPU_DRIVER="nvidia"
+        ;;
+    3)
+        GPU_DRIVER="xf86-video-amdgpu"
+        ;;
+    4)
+        GPU_DRIVER="xf86-video-vmware"
+        ;;
+    *)
+    echo "Invalid GPU Driver choice, exiting..."
+    exit 1
+esac
 
 if [ -d /sys/class/power_supply ]; then
     PLATFORM=LAPTOP
@@ -213,15 +237,16 @@ arch-chroot /mnt /bin/bash << EOF
 
 EOF
 
-# Find out which video driver you need
-#lspci -k | grep -EA3 'VGA|3D|Display'
-
-#if []; then
-arch-chroot /mnt /bin/bash << EOF
-    pacman --noconfirm -S xf86-video-vmware
-    systemctl enable vboxservice.service
+if [ "x${GPU_DRIVER}" = "xxf86-video-vmware" ]; then
+    arch-chroot /mnt /bin/bash << EOF
+        pacman --noconfirm -S ${GPU_DRIVER}
+        systemctl enable vboxservice.service
 EOF
-#fi
+else
+    arch-chroot /mnt /bin/bash << EOF
+        pacman --noconfirm -S ${GPU_DRIVER}
+EOF
+fi
 
 # For laptop:
 if [ "x${PLATFORM}" = "xLAPTOP" ]; then
@@ -289,7 +314,6 @@ arch-chroot /mnt /bin/bash << EOF
         if [ -f /home/${USER}/.zshrc ]; then rm /home/${USER}/.zshrc; fi
         stow zsh
         stow polybar
-        stow i3
         stow rofi
         stow Xresources
         stow powerline
