@@ -284,8 +284,6 @@ sleep 3
 
 arch-chroot /mnt /bin/bash <<< 'cd /home/${USER}/Development/aur; for PACK in */; do chown -R nobody ${PACK}; cd ${PACK}; sudo -u nobody makepkg; PACK_NAME=$(find * -name "*nerd-fonts-complete*.tar.xz"); if [ "x${PACK_NAME}" != "x" ]; then pacman -U --noconfirm ${PACK_NAME}; else pacman -U --noconfirm *.tar.xz; fi; cd ..; done'
 
-exit
-
 arch-chroot /mnt /bin/bash << EOF
         cd /home/${USER}/Development/
         echo "Installing vimix gtk theme..."
@@ -304,7 +302,6 @@ arch-chroot /mnt /bin/bash << EOF
    	    chown -R ${USER} /home/${USER}
         mv ohmy.sh /home/${USER}
         sudo -u ${USER} /home/${USER}/ohmy.sh
-        exit
         echo "...and some plugins..."
         sleep 2
         git clone https://github.com/zsh-users/zsh-autosuggestions /home/${USER}/.oh-my-zsh/custom/plugins/zsh-autosuggestions
@@ -313,6 +310,7 @@ arch-chroot /mnt /bin/bash << EOF
         cd /home/${USER}/.dotfiles
         if [ -f /home/${USER}/.zshrc ]; then rm /home/${USER}/.zshrc; fi
         stow zsh
+        stow i3
         stow polybar
         stow rofi
         stow Xresources
